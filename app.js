@@ -18,11 +18,11 @@ const initializeDBAndServer = async () => {
       driver: sqlite3.Database,
     });
     app.listen(3000, () => {
-      console.log("Server Running at http://localhost:3000/")
+      console.log("Server Running at http://localhost:3000/");
     });
   } catch (error) {
     console.log(`DB Error: ${error.message}`);
-    process.exit(1); 
+    process.exit(1);
   }
 };
 
@@ -51,6 +51,17 @@ app.get("/players/", async (request, response) => {
   );
 });
 
+app.post("/players/", async (request, response) => {
+  const { playerName, jerseyNumber, role } = request.body;
+  const addPlayerDetails = `
+  INSERT INTO
+  cricket_team (player_name, jersey_number, role)
+  VALUES
+  ('${playerName}',${jerseyNumber},'${role}');`;
+  const dbResponse = await database.run(addPlayerDetails);
+  response.send("Player Added to Team");
+});
+
 app.get("/players/:playerId/", async (request, response) => {
   const { playerId } = request.params;
   const getPlayerQuery = `SELECT
@@ -63,20 +74,9 @@ app.get("/players/:playerId/", async (request, response) => {
   response.send(convertDBObjectToResponseObject(player));
 });
 
-app.post("/players/", async (request, response) => {
-  const { playerName, jerseyNumber, role } = request.body;
-  const addPlayerDetails = `
-  INSERT INTO
-  cricket_team (player_name, jersey_number, role)
-  VALUES
-  ('${playerName}',${jerseyNumber},'${role}');`;
-  const dbResponse = await database.run(addPlayerDetails);
-  response.send("Player Added to Team");
-});
-
 app.put("/players/:playerId/", async (request, response) => {
   const { playerName, jerseyNumber, role } = request.body;
-  const {playerId} = request.params;
+  const { playerId } = request.params;
   const updatePlayerQuery = `
   UPDATE
   cricket_team 
@@ -87,10 +87,11 @@ app.put("/players/:playerId/", async (request, response) => {
   WHERE 
   player_id = ${playerId};`;
   await database.run(updatePlayerQuery);
-  response.send("Player Details Updated")
+  response.send("Player Details Updated");
+});
 
 app.delete("/players/:playerId/", async (request, response) => {
-  const {playerId} = request.params;
+  const { playerId } = request.params;
   const deletePlayerQuery = `
   DELETE FROM 
   cricket_team 
